@@ -10,9 +10,9 @@ permissions:
   packages: write
 
 env:
-  ACR_LOGIN_SERVER: ${{ secrets.AZURE_ACR_LOGIN_SERVER }} # like myregistry.azurecr.io
-  AKS_RESOURCE_GROUP: ${{ secrets.AZURE_AKS_RESOURCE_GROUP }}
-  AKS_CLUSTER_NAME: ${{ secrets.AZURE_AKS_CLUSTER_NAME }}
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }} # like myregistry.azurecr.io
+  AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+  AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
 
 jobs:
   build-and-push:
