@@ -1,0 +1,25 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kustomize_overlay: dev
+  tasks:
+    - name: Ensure kind is installed (manual step if missing)
+      debug:
+        msg: "Install kind: brew install kind; kubectl: brew install kubectl"
+
+    - name: Create kind cluster if not exists
+      shell: |
+        kind get clusters | grep -q finance || kind create cluster --name finance
+      changed_when: false
+
+    - name: Apply Kustomize overlay
+      shell: |
+        kubectl apply -k k8s/overlays/{{ kustomize_overlay }}
+      args:
+        chdir: "{{ playbook_dir }}/.."
+
+
+
+

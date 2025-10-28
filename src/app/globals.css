@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+body { @apply m-0 bg-brand-white text-brand-black font-sans; }
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 font-medium transition-colors;
+}
+.btn-primary {
+  @apply bg-brand-orange text-brand-white hover:bg-orange-500;
+}
+.btn-outline {
+  @apply border border-brand-orange text-brand-orange hover:bg-orange-50;
+}
+
+.card {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+}
+
+
+
