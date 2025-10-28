@@ -12,6 +12,8 @@ spec:
       labels:
         app: finance-app
     spec:
+      imagePullSecrets:
+        - name: acr-secret
       containers:
         - name: app
           image: ghcr.io/your-user/finance-app:latest
