@@ -57,3 +57,4 @@ See `docs/STEP_BY_STEP.md` for detailed deployment instructions.
 - AKS Cluster: finance-aks
 - Container Registry: financeacr12345.azurecr.io
 - PostgreSQL: finance-pg
+# Trigger deployment
