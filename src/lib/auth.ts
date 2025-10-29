@@ -17,7 +17,23 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) return null;
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
         if (!user) return null;
-        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        let valid = false;
+        try {
+          // Prefer bcrypt comparison when the stored hash is bcrypt
+          if (user.passwordHash.startsWith('$2')) {
+            valid = await bcrypt.compare(credentials.password, user.passwordHash);
+          } else {
+            // Backward compatibility: accept legacy plain-text stored password
+            valid = credentials.password === user.passwordHash;
+            if (valid) {
+              // Upgrade to bcrypt hash transparently
+              const newHash = await bcrypt.hash(credentials.password, 10);
+              await prisma.user.update({ where: { id: user.id }, data: { passwordHash: newHash } });
+            }
+          }
+        } catch {
+          valid = false;
+        }
         if (!valid) return null;
         return { id: user.id, email: user.email } as any;
       }
