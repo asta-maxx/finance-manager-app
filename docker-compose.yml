@@ -17,6 +17,8 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/finance?schema=public
       NODE_ENV: production
+      API_TOKEN: ${API_TOKEN:-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
     ports:
       - "3000:3000"
     depends_on:

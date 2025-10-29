@@ -1,22 +1,25 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { optionsResponse } from '../../../lib/cors';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 
 export async function GET() {
-  const txs = await prisma.transaction.findMany({ orderBy: { occurredAt: 'desc' } });
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  const txs = await prisma.transaction.findMany({ where: userId ? { userId } : undefined, orderBy: { occurredAt: 'desc' } });
   return NextResponse.json(txs);
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
-  // Get or create demo user
-  let user = await prisma.user.findUnique({ where: { email: 'demo@example.com' } });
-  if (!user) {
-    user = await prisma.user.create({ data: { email: 'demo@example.com', passwordHash: 'demo' } });
-  }
   const created = await prisma.$transaction(async (tx) => {
     const tr = await tx.transaction.create({
       data: {
-        userId: user.id,
+        userId,
         amount: body.amount,
         currency: body.currency,
         type: body.type,
@@ -67,6 +70,10 @@ export async function DELETE(req: Request) {
   });
   
   return NextResponse.json({ success: true });
+}
+
+export function OPTIONS() {
+  return optionsResponse();
 }
 
 

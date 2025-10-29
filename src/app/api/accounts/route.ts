@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { optionsResponse } from '../../../lib/cors';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 
 export async function GET() {
-  const accounts = await prisma.account.findMany();
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  const accounts = await prisma.account.findMany({ where: userId ? { userId } : undefined });
   return NextResponse.json(accounts);
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
-  // Get or create demo user
-  let user = await prisma.user.findUnique({ where: { email: 'demo@example.com' } });
-  if (!user) {
-    user = await prisma.user.create({ data: { email: 'demo@example.com', passwordHash: 'demo' } });
-  }
   const account = await prisma.account.create({
     data: {
-      userId: user.id,
+      userId,
       name: body.name,
       currency: body.currency,
       balance: body.balance ?? 0
@@ -31,6 +34,10 @@ export async function DELETE(req: Request) {
   
   await prisma.account.delete({ where: { id } });
   return NextResponse.json({ success: true });
+}
+
+export function OPTIONS() {
+  return optionsResponse();
 }
 
 

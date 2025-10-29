@@ -3,6 +3,7 @@ import React from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import { ModalProvider, useModal } from './provider';
+import { SessionProvider } from 'next-auth/react';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const modal = useModal();
@@ -19,9 +20,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ModalProvider>
-      <LayoutContent>{children}</LayoutContent>
-    </ModalProvider>
+    <SessionProvider>
+      <ModalProvider>
+        <LayoutContent>{children}</LayoutContent>
+      </ModalProvider>
+    </SessionProvider>
   );
 }
 
