@@ -59,5 +59,35 @@ jobs:
           sed -i "s#REPLACE_WITH_ACR#${{ env.ACR_LOGIN_SERVER }}#g" k8s/overlays/azure/kustomization.yaml
           kubectl apply -k k8s/overlays/azure
 
+  set-secrets-and-restart:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Get AKS credentials
+        run: az aks get-credentials -g "$AKS_RESOURCE_GROUP" -n "$AKS_CLUSTER_NAME" --overwrite-existing
+      - name: Get external IP
+        id: ip
+        run: echo "ip=$(kubectl get svc azure-finance-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}')" >> $GITHUB_OUTPUT
+      - name: Update secret and restart
+        env:
+          DB_URL: ${{ secrets.DATABASE_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          IP: ${{ steps.ip.outputs.ip }}
+        run: |
+          kubectl delete secret azure-finance-secrets || true
+          kubectl create secret generic azure-finance-secrets \
+            --from-literal=DATABASE_URL="${DB_URL}" \
+            --from-literal=API_TOKEN="${API_TOKEN:-change-me}" \
+            --from-literal=CORS_ORIGIN="http://${IP}" \
+            --from-literal=NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-$(openssl rand -hex 32)}" \
+            --from-literal=NEXTAUTH_URL="http://${IP}"
+          kubectl rollout restart deployment azure-finance-app
+
 
 

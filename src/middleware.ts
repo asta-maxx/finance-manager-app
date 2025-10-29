@@ -51,7 +51,12 @@ export async function middleware(request: Request) {
 }
 
 export const config = {
-  matcher: ['/api/:path*']
+  // Run on API routes and all pages except Next static assets and auth endpoints
+  matcher: [
+    '/api/:path*',
+    // protect app pages (exclude Next internal assets and auth routes)
+    '/((?!_next/|static/|favicon.ico|api/auth).*)'
+  ]
 };
 
 
